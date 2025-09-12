@@ -1,46 +1,88 @@
-import { Stack, TextInput } from "@mantine/core";
-import React, { useState } from "react";
+import { useState } from "react";
+import { TextInput, Center, Stack, Text, Button, Anchor } from "@mantine/core";
+import Service from "../utils/http";
 
-const UrlShortner = () => {
-  const [originalUrl, setOriginalUrl] = useState();
-  const [customLink, setCustomLink] = useState();
-  const [title, setTitle] = useState();
-  const [expiry, setExpiry] = useState();
+const UrlShortener = () => {
+  const [originalUrl, setOriginalUrl] = useState("");
+  const [customUrl, setCustomUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [shortUrlData, setShortUrlData] = useState(null);
+
+  const service = new Service();
+
+  const getShortUrl = async () => {
+    const response = await service.post("s", {
+      customUrl,
+      originalUrl,
+      expiryDate,
+      title,
+    });
+    setShortUrlData(response);
+  };
 
   return (
-    <div>
-      <Stack>
-        <Text size="30px">Shorten Url Here</Text>
-        <TextInput
-          label="Original Url"
-          withAsterisk
-          onChange={(e) => setOriginalUrl(e.target.value)}
-          value={originalUrl}
-        />
-        <TextInput
-          label="Customize Your Url (Optional)"
-          withAsterisk
-          onChange={(e) => setCustomLink(e.target.value)}
-          value={customLink}
-        />
-        <TextInput
-          label="Title (Optional)"
-          withAsterisk
-          onChange={(e) => setTitle(e.target.value)}
-          value={title}
-        />
-        <TextInput
-          label="Date of expiry (optional)"
-          onChange={(e) => setExpiry(e.target.value)}
-          value={expiry}
-          type="date"
-        />
-        <Button variant="outline" disabled={!originalUrl}>
-          Generate short url
-        </Button>
-      </Stack>
-    </div>
+    <Center style={{ height: "90vh" }}>
+      {!shortUrlData ? (
+        <Stack gap="sm">
+          <Text
+            variant="gradient"
+            gradient={{ from: "pink", to: "indigo", deg: 90 }}
+            size="30px"
+            fw={700}
+          >
+            Shorten your URL here
+          </Text>
+
+          <TextInput
+            label="Original link:"
+            withAsterisk
+            placeholder="Enter your link here"
+            onChange={(e) => setOriginalUrl(e.target.value)}
+            value={originalUrl}
+          />
+
+          <TextInput
+            label="Custom link (Optional):"
+            placeholder="Enter your custom link here"
+            onChange={(e) => setCustomUrl(e.target.value)}
+            value={customUrl}
+            radius="md"
+          />
+
+          <TextInput
+            label="Title (Optional):"
+            placeholder="Enter your title here"
+            onChange={(e) => setTitle(e.target.value)}
+            value={title}
+          />
+
+          <TextInput
+            label="Expiry Date (Optional):"
+            placeholder="Enter your expiry date here"
+            onChange={(e) => setExpiryDate(e.target.value)}
+            value={expiryDate}
+            type="date"
+          />
+
+          <Button
+            variant="outline"
+            disabled={!originalUrl}
+            onClick={getShortUrl}
+          >
+            Shorten URL
+          </Button>
+        </Stack>
+      ) : (
+        <Anchor
+          href={`${service.getBaseURL()}/api/s/${shortUrlData?.shortCode}`}
+          target="_blank"
+        >
+          {`${service.getBaseURL()}/api/s/${shortUrlData?.shortCode}`}
+        </Anchor>
+      )}
+    </Center>
   );
 };
 
-export default UrlShortner;
+export default UrlShortener;
